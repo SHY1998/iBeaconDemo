@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">iBeaconDemo</string>
+    <string name="error_bluetooth_not_supported">当前设备不支持蓝牙功能</string>
+    <string name="success_bluetooth__supported">当前设备支持蓝牙功能</string>
+
+    <string name="ble_not_supported">当前设备不支持BLE功能</string>
+    <string name="ble__supported">当前设备支持BLE功能</string>
+    <string name="startBroadCast">配置设备</string>
+    <string name="startReceiver">接收广播</string>
+    <string name="stopSend">停止广播</string>
+    <string name="stopReceiver">停止接收</string>
+    <string name="macHint">请输入要对接的设备蓝牙名称</string>
+    <string name="receiveMessage">这里将显示接收到的信息</string>
+    <string name="reportingFrequency">设置上报频率</string>
+    <string name="powerThreshold">设置电量阈值</string>
+    <string name="signalThreshold">设置移动信号阈值</string>
+    <string name="getInfo">查询设备信息</string>
+
+    <string-array name="infoIndex">
+        <item>shenhangyu</item>  <!--1873-->
+        <item>h</item>  <!--1868-->
+        <item>e</item>  <!--1865-->
+        <item>n</item>  <!--186e-->
+        <item>h</item>  <!--1868-->
+        <item>a</item>  <!--1861-->
+        <item>n</item>  <!--186e-->
+        <item>g</item>  <!--1867-->
+        <item>y</item>  <!--1879-->
+        <item>u</item>  <!--1875-->
+    </string-array>
+    
+    <string-array name="powerChange">
+        <item>开机</item>
+        <item>关机</item>
+    </string-array>
+</resources>
