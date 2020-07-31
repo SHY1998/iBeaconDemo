@@ -10,53 +10,54 @@
     android:background="@color/colorBackground"
     android:orientation="vertical">
 
-    <LinearLayout
+
+    <TextView
+        android:text="@string/mainPageMacHint"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"/>
+
+    <EditText
+        android:enabled="false"
+        android:id="@+id/receive_mac"
         android:layout_height="60dp"
-        android:orientation="horizontal">
-
-        <EditText
-            android:layout_weight="9"
-            android:id="@+id/receive_mac"
-            android:layout_height="60dp"
-            android:hint="@string/macHint"
-            tools:ignore="MissingConstraints"
-            android:layout_width="wrap_content"
-            />
-
-        <ImageButton
-            android:background="@color/colorBackground"
-            android:layout_weight="1"
-            android:layout_width="wrap_content"
-            android:layout_height="60dp"
-            android:src="@drawable/scan" />
-    </LinearLayout>
-
-
+        tools:ignore="LabelFor,MissingConstraints"
+        android:layout_width="match_parent"
+        />
+    <TextView
+        android:text="@string/broadCastType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"/>
+    <Spinner
+        android:id="@+id/broadType"
+        android:layout_width="match_parent"
+        android:spinnerMode="dialog"
+        android:layout_height="60dp"/>
+    <TextView
+        android:text="@string/powerTip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"/>
     <Spinner
         android:id="@+id/powerChange"
         android:layout_width="match_parent"
         android:spinnerMode="dialog"
         android:layout_height="60dp"/>
-
     <EditText
         android:id="@+id/reportingFre"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:hint="@string/reportingFrequency"
         tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="16dp"
-        android:inputType="number"
-        tools:layout_editor_absoluteY="168dp" />
+        android:inputType="number" />
     <EditText
         android:id="@+id/powerThreshold"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:hint="@string/powerThreshold"
         android:inputType="number"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="16dp"
-        tools:layout_editor_absoluteY="168dp" />
+        tools:ignore="MissingConstraints" />
     <EditText
         android:id="@+id/signalThreshold"
         android:layout_width="match_parent"
@@ -64,73 +65,52 @@
         android:inputType="number"
         android:hint="@string/signalThreshold"
         tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="16dp"
-        tools:layout_editor_absoluteY="168dp" />
-
-    <!--    <TextView-->
-<!--        android:id="@+id/BleSupport"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintLeft_toLeftOf="parent"-->
-<!--        app:layout_constraintRight_toRightOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent" />-->
-
-    <TextView
-        android:id="@+id/receiveMessage"
-        android:layout_width="match_parent"
-        android:layout_height="74dp"
-        android:hint="@string/receiveMessage"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="378dp" />
+         />
+<!--    <TextView-->
+<!--        android:id="@+id/receiveMessage"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="74dp"-->
+<!--        android:hint="@string/receiveMessage"-->
+<!--        tools:ignore="MissingConstraints"-->
+<!--        tools:layout_editor_absoluteX="0dp"-->
+<!--        tools:layout_editor_absoluteY="378dp" />-->
 
     <Button
         android:id="@+id/Btn_startSend"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="startBroadCast"
         android:text="@string/startBroadCast"
         tools:ignore="MissingConstraints,OnClick"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="15dp" />
+         />
 
     <Button
         android:id="@+id/Btn_getInfo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="getInfo"
+
         android:text="@string/getInfo"
         tools:ignore="MissingConstraints,OnClick"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="15dp" />
-
+        />
     <Button
-        android:id="@+id/Btn_stopSend"
+        android:id="@+id/exit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/stopSend"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="16dp"
-        tools:layout_editor_absoluteY="94dp" />
-
-    <Button
-        android:id="@+id/Btn_startReceive"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/startReceiver"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="588dp" />
+        android:text="退出配置"/>
+<!--    <Button-->
+<!--        android:id="@+id/Btn_stopSend"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="@string/stopSend"-->
+<!--        tools:ignore="MissingConstraints"-->
+<!--        tools:layout_editor_absoluteX="16dp"-->
+<!--        tools:layout_editor_absoluteY="94dp" />-->
 
 <!--    <Button-->
-<!--        android:id="@+id/Btn_stopReceive"-->
+<!--        android:id="@+id/Btn_startReceive"-->
 <!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="64dp"-->
-<!--        android:text="@string/stopReceiver"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="@string/startReceiver"-->
 <!--        tools:ignore="MissingConstraints"-->
 <!--        tools:layout_editor_absoluteX="0dp"-->
-<!--        tools:layout_editor_absoluteY="662dp" />-->
-
-
+<!--        tools:layout_editor_absoluteY="588dp" />-->
 </LinearLayout>

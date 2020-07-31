@@ -1,43 +1,64 @@
 package com.example.ibeacondemo.Util;
 
-import java.util.zip.CRC32;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.util.Log;
+
+import com.example.ibeacondemo.Bean.ReceiveMessage;
+import com.example.ibeacondemo.Bean.SendMessage;
 
 public class BlueToothUtil {
-
     /**
-     * 组装报文并晚会字节数组
-     * @param freq 上报频率
-     * @param power 电量阈值
-     * @param sign  移动信号阈值
-     * @return  报文字节数组
+     * 组装报文并返回字节数组
      */
-    public static byte[]  fieldShaping(String freq, String power, String sign,String status, boolean actionType, String mac ) {
+    public static byte[]  fieldShaping(SendMessage sendMessage) {
+
+        String mac = sendMessage.getMac();
+        int curNum = sendMessage.getCrNum();
+        int messageType = sendMessage.getComType();
         String str = "";
         if (mac.length()<=12) {
             str += hexPad(mac,6);
         } else {
             str += mac;
         }
+        //添加数据编号
+        Log.d("编号", "fieldShaping: "+ curNum);
+        Log.d("编号", "fieldShaping: " + Integer.toHexString(curNum));
+        str += hexPad(Integer.toHexString(curNum),1);
+        //添加命令类型
+        str += hexPad(Integer.toHexString(messageType),1);
+        switch (messageType) {
+            case 0X01:
+                String freq = sendMessage.getDataStructure().getRepFre();
+                String sign = sendMessage.getDataStructure().getSignAlarm();
+                String power = sendMessage.getDataStructure().getPowerAlarm();
+                String status = sendMessage.getDataStructure().getPowerSet();
+                String broadType = sendMessage.getDataStructure().getBroadType();
+                if (broadType.equals("MQTT")) {
+                    str += hexPad(Integer.toHexString(Integer.parseInt("0")),1);
+                } else {
+                    str += hexPad(Integer.toHexString(Integer.parseInt("1")),1);
+                }
+                if (status.equals("开机")) {
+                    str += hexPad(Integer.toHexString(Integer.parseInt("1")),1);
+                } else {
+                    str += hexPad(Integer.toHexString(Integer.parseInt("0")),1);
+                }
+                //上报频率字段
+                str += hexPad(Integer.toHexString(Integer.parseInt(freq)),2);
+                //电量阈值字段
+                str += hexPad(Integer.toHexString(Integer.parseInt(power)),2);
+                //移动信号字段
+                str += hexPad(Integer.toHexString(Integer.parseInt(sign)),2);
+                break;
+            case 0X02: case 0X03: case 0X04: case 0XFF:
+                break;
+            default:
+                break;
 
-        int len = 0;
-        if (actionType) {
-            if (status.equals("开机")) {
-                str += hexPad(Integer.toHexString(Integer.parseInt("1")),1);
-            } else {
-                str += hexPad(Integer.toHexString(Integer.parseInt("0")),1);
-            }
-            //指令类型
-            str += hexPad(Integer.toHexString(Integer.parseInt("1")),1);
-            //上报频率字段
-            str += hexPad(Integer.toHexString(Integer.parseInt(freq)),2);
-            //电量阈值字段
-            str += hexPad(Integer.toHexString(Integer.parseInt(power)),2);
-            //移动信号字段
-            str += hexPad(Integer.toHexString(Integer.parseInt(sign)),2);
-        } else {
-            str += hexPad(Integer.toHexString(Integer.parseInt("0")),7);
         }
-        len = str.length()/2;
+        int len = str.length()/2;
         str = str.toUpperCase();
         System.out.println("最终数组 = "+str);
         System.out.println("加上CRC = " + str+ getCRC3(hexStringToByte(str)));
@@ -155,5 +176,75 @@ public class BlueToothUtil {
         crc = ( (crc & 0xFF00) >> 8) | ( (crc & 0x00FF ) << 8);
         System.out.println("crc检验" + String.format("%04X", crc));
         return String.format("%04X", crc);
+    }
+
+    public static boolean messageCorrect(ReceiveMessage receiveMessage, int curNum, String mac, int curType) {
+
+        Log.d("tools", "mac: " + receiveMessage.getMac() + "msgNum= " + receiveMessage.getCurNum() + "报文");
+        return curNum == receiveMessage.getCurNum() && mac.equals(receiveMessage.getMac()) && curType == receiveMessage.getComType();
+    }
+
+    public static int parseType(String msg) {
+        int fstLen = Integer.parseInt(msg.substring(0,2),16)+1;
+        return Integer.parseInt(msg.substring(fstLen*2+4,fstLen*2+6),16);
+    }
+
+//    public static SendMessage parseMsg(String msg) {
+//        String mac = msg.substring(4,16);
+//        //Mac地址字段长度
+//        int fstLen = Integer.parseInt(msg.substring(0,2),16)+1;
+//        //后面数据协议字段
+//        String data = msg.substring(fstLen*2+6);
+//        String curNum = data.substring(0,2);
+//        String curType = data.substring(2,4);
+//        //是否成功
+//        String result = data.substring(8,10);
+//        //判断是否成功
+//        if (Integer.parseInt(result,16) == 1) {
+//            return null;
+//        }
+//        int messageType = Integer.parseInt(data.substring(6,8),16);
+//        SendMessage sendMessage;
+//
+//        switch (messageType) {
+//            case 2:
+//                String broadType = data.substring(0,2);
+//                String status = data.substring(2,4);
+//                String freq = data.substring(4,6);
+//                String power = data.substring(6,8);
+//                String signal = data.substring(8,10);
+//                sendMessage = new SendMessage(status,broadType,freq,power,signal);
+//                break;
+//            case 3:
+//                String editLen = data.substring(0,2);
+//                String edit = data.substring(2);
+//                sendMessage = new SendMessage(editLen,edit);
+//                break;
+//            case 4:
+//                sendMessage = new SendMessage(data);
+//                break;
+//            default:
+//                sendMessage = null;
+//                break;
+//        }
+//        if (sendMessage!=null) {
+//            sendMessage.setBroadType(String.valueOf(messageType));
+//        }
+//        return sendMessage;
+//    }
+    /**
+     * 提示框
+     */
+    public static void showDialog(Context context,String message){
+        new AlertDialog.Builder(context)
+                .setTitle("提示")
+                .setMessage(message)
+                .setPositiveButton("确定",null)
+                .show();
+    }
+
+    public static boolean messageTypeCorrect(String backMessage, int messageType) {
+
+        return false;
     }
 }

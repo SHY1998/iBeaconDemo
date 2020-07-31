@@ -5,4 +5,9 @@
         <item>开机</item>
         <item>关机</item>
     </string-array>
+
+    <string-array name="broadType">
+        <item>MQTT</item>
+        <item>JTT808</item>
+    </string-array>
 </resources>

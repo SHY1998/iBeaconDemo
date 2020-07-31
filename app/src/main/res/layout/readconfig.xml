@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical">
+    <Button
+        android:id="@+id/btn_getConfig"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="获取参数"
+        tools:ignore="MissingConstraints,OnClick"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="15dp" />
+    <Button
+        android:id="@+id/btn_getEdition"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="获取版本号"
+        tools:ignore="MissingConstraints,OnClick"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="15dp" />
+    <Button
+        android:id="@+id/btn_getBattery"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="获取电量"
+        tools:ignore="MissingConstraints,OnClick"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="15dp" />
+    <TextView
+        android:text="@string/mainPageMacHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"/>
+
+    <EditText
+        android:enabled="false"
+        android:id="@+id/receive_mac"
+        android:layout_height="50dp"
+        tools:ignore="LabelFor,MissingConstraints"
+        android:layout_width="match_parent"
+        />
+    <LinearLayout
+        android:id="@+id/configFather"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:text="设备当前为："
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"/>
+
+        <EditText
+            android:enabled="false"
+            android:id="@+id/status"
+            android:layout_height="50dp"
+            tools:ignore="LabelFor,MissingConstraints"
+            android:layout_width="match_parent"
+            />
+
+
+        <TextView
+            android:text="上报频率为："
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"/>
+
+        <EditText
+            android:enabled="false"
+            android:id="@+id/freq"
+            android:layout_height="50dp"
+            tools:ignore="LabelFor,MissingConstraints"
+            android:layout_width="match_parent" />
+
+
+
+        <TextView
+            android:text="电量阈值为："
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"/>
+
+        <EditText
+            android:enabled="false"
+            android:id="@+id/powerThreshold"
+            android:layout_height="50dp"
+            tools:ignore="LabelFor,MissingConstraints"
+            android:layout_width="match_parent"
+            />
+        <TextView
+            android:text="信号阈值为："
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"/>
+
+        <EditText
+            android:enabled="false"
+            android:id="@+id/signalThreshold"
+            android:layout_height="50dp"
+            tools:ignore="LabelFor,MissingConstraints"
+            android:layout_width="match_parent"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/editionFather"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:text="版本号为："
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"/>
+
+        <EditText
+            android:enabled="false"
+            android:id="@+id/Edition"
+            android:layout_height="60dp"
+            tools:ignore="LabelFor,MissingConstraints"
+            android:layout_width="match_parent"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/batterFather"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:text="电池电量为"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"/>
+
+        <EditText
+            android:enabled="false"
+            android:id="@+id/Battery"
+            android:layout_height="50dp"
+            tools:ignore="LabelFor,MissingConstraints"
+            android:layout_width="match_parent"
+            />
+    </LinearLayout>
+
+
+
+
+
+</LinearLayout>

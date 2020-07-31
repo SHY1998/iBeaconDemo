@@ -1,7 +1,7 @@
 package com.example.ibeacondemo;
 
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
+
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -16,7 +16,6 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,7 +23,6 @@ import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -32,24 +30,30 @@ import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.ibeacondemo.Bean.DataStructure;
+import com.example.ibeacondemo.Bean.ReceiveMessage;
+import com.example.ibeacondemo.Bean.SendMessage;
+import com.example.ibeacondemo.Util.BaseDispatchTouchActivity;
 import com.example.ibeacondemo.Util.BlueToothUtil;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 @SuppressLint("NewApi")
-public class MainActivity extends AppCompatActivity {
+public class MainActivity  extends BaseDispatchTouchActivity implements View.OnClickListener{
 
 
+    //当前报文数据编号
+    private int curNum = -1;
     private Handler mHandler;
-    private String[] info ;
     //目标设备名
     private String targetName = "";
     //扫描指示参数
     private boolean mScanning;
     //广播指示参数
-    private boolean mAdvertising;
+    private boolean mAdvertising = false;
+    //是否成功
+    private boolean backResult = false;
     //蓝牙广播器
     private BluetoothLeAdvertiser mBluetoothLeAdvertiser;
     //蓝牙扫描器
@@ -81,6 +85,9 @@ public class MainActivity extends AppCompatActivity {
     EditText signalThreshold;
     //开关机下拉框
     Spinner spinner;
+    //协议类型
+    Spinner broadType;
+    int curOp;
 
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -88,9 +95,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        info = getResources().getStringArray(R.array.infoIndex);
-        init();
+
         initUi(this);
+        init();
     }
 
     /**
@@ -99,24 +106,15 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("NewApi")
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void init()  {
+        //消息处理器
         mHandler = new Handler();
-        if (!getPackageManager().hasSystemFeature (PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(this, "不支持", Toast.LENGTH_LONG).show();
-            finish();
-        }
+        //获取上一个页面传过来的mac
+        Intent intent1 = getIntent();
+        targetName = intent1.getStringExtra("connectMac");
+        receive_mac.setText(targetName);
         bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
-        if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
-            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(intent,1);
-            Toast.makeText(this,"未配对蓝牙",Toast.LENGTH_SHORT).show();
-            finish();
-        }
         mBluetoothLeAdvertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
-        if (mBluetoothLeAdvertiser == null ) {
-            Toast.makeText(this, "不支持BLE Peripheral", Toast.LENGTH_SHORT).show();
-            finish();
-        }
         mBluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
     }
 
@@ -144,18 +142,15 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     Log.d(TAG, "run: 官博");
-                    if (Build.VERSION.SDK_INT >= 21) {
-                        mScanning = false;
-                        mbLeScanner.stopScan(mScanCallback);
-                    } else {
-                          mScanning = false;
-                          bluetoothAdapter.stopLeScan(mLeScanCallback);
+                    stopScan();
+                    if (!backResult) {
+                        mAdvertising = false;
+                        BlueToothUtil.showDialog(MainActivity.this,"配置失败，请重试");
                     }
                 }
             }, 10000);
         } else {
-              Log.d(TAG, "bleScan: 是false");
-              Toast.makeText(this,"手机正在扫描,请勿重复启动",Toast.LENGTH_SHORT).show();
+            BlueToothUtil.showDialog(MainActivity.this,"手机正在配置,请勿操作");
         }
     }
 
@@ -188,30 +183,16 @@ public class MainActivity extends AppCompatActivity {
         return mAdvertiseSettings;
     }
 
-
-    /**
-     *
-     * @param freq
-     * @param power
-     * @param sign
-     * @param status
-     */
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public  void createAdvertiseData(String freq, String power, String sign, String status, boolean actionType, String mac) {
+    public  void createAdvertiseData(SendMessage sendMessage) {
         //广播包设置
         mAdvertiseData =new AdvertiseData.Builder()
-                .addServiceData(ParcelUuid.fromString(BROADCAST_SERVICE),BlueToothUtil.fieldShaping(freq, power, sign, status, actionType, mac))
-                //广播包主要存储设备名字
-//                .setIncludeDeviceName(true)
-                .build();
-        //扫描包设置
-        mScanResponseData = new AdvertiseData.Builder()
-                //扫描包主要存储数据信息
-//                .addServiceData(ParcelUuid.fromString(HEART_RATE_SERVICE),text.getBytes())
+                .addServiceData(ParcelUuid.fromString(BROADCAST_SERVICE),BlueToothUtil.fieldShaping(sendMessage))
                 .build();
         //如果广播包为空,则提示错误
         if (mAdvertiseData == null) {
             Log.e(TAG, "mAdvertiseSettings == null");
+
         }
     }
 
@@ -219,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
         if (mBluetoothLeAdvertiser != null) {
             mBluetoothLeAdvertiser.stopAdvertising(mAdvertiseCallback);
             //停止广播
-//            mBluetoothLeAdvertiser = null;
+            mAdvertising =false;
             Log.e(TAG,"停止广播");
         }
     }
@@ -232,27 +213,35 @@ public class MainActivity extends AppCompatActivity {
     private void initUi(final Context context) {
         //布局信息
         final LinearLayout linearLayout = findViewById(R.id.LinearLayout);
-        //发送广播按钮
-        Button btn_startSend = findViewById(R.id.Btn_startSend);
-        //停止广播按钮
-        Button btn_stopSend = findViewById(R.id.Btn_stopSend);
-        //开始接收按钮
-        Button btn_startReceive = findViewById(R.id.Btn_startReceive);
         //下拉框设置
         spinner = findViewById(R.id.powerChange);
-        SpinnerAdapter arrayAdapter = new com.example.ibeacondemo.Adapter.SpinnerAdapter(this,R.layout.support_simple_spinner_dropdown_item,getResources().getStringArray(R.array.powerOn));
-        spinner.setAdapter(arrayAdapter);
-        //报文显示文本框
-        receiveMessage = findViewById(R.id.receiveMessage);
+        //协议类型
+        broadType = findViewById(R.id.broadType);
         //设备名编辑框
         receive_mac = findViewById(R.id.receive_mac);
-        //上报频率
-        reportingFrequency = findViewById(R.id.reportingFre);
         //电量阈值
         powerThreshold = findViewById(R.id.powerThreshold);
+        //上报频率
+        reportingFrequency = findViewById(R.id.reportingFre);
         //移动信号阈值
         signalThreshold = findViewById(R.id.signalThreshold);
+        //配置设备按钮
+        Button btn_startSend = findViewById(R.id.Btn_startSend);
+        //查询配置按钮
+        Button btn_getInfo = findViewById(R.id.Btn_getInfo);
+        //退出配置
+        Button btn_exit = findViewById(R.id.exit);
+        //下发点击事件
+        btn_exit.setOnClickListener(this);
+        btn_startSend.setOnClickListener(this);
+        btn_getInfo.setOnClickListener(this);
+        //配置报文类型
+        SpinnerAdapter adapter = new com.example.ibeacondemo.Adapter.SpinnerAdapter(this,R.layout.support_simple_spinner_dropdown_item,getResources().getStringArray(R.array.broadType));
+        broadType.setAdapter(adapter);
+        //配置开关机
+        SpinnerAdapter arrayAdapter = new com.example.ibeacondemo.Adapter.SpinnerAdapter(this,R.layout.support_simple_spinner_dropdown_item,getResources().getStringArray(R.array.powerOn));
         spinner.setAdapter(arrayAdapter);
+
         //当点击空白时，使其他所有组件失去焦点
         linearLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -263,48 +252,6 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-
-        //停止广播事件
-        btn_stopSend.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //判断是否在广播
-                if (mAdvertising) {
-                    //如果在广播,则关闭广播
-                    stopAdvertise();
-                    Toast.makeText(context,"停止广播",Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(context,"手机处于非广播状态",Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        //开始接收设备广播事件
-        btn_startReceive.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                targetName = receive_mac.getText().toString();
-                if (targetName.equals("")) {
-                    Toast.makeText(context,"请先输入想要接收的广播名",Toast.LENGTH_SHORT).show();
-                } else {
-                    bleScan();
-                }
-            }
-        });
-
-//        //停止广播事件
-//        btn_stopReceive.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if (Build.VERSION.SDK_INT >= 21) {
-//                    mScanning = false;
-//                    mbLeScanner.stopScan(mScanCallback);
-//                } else {
-//                    mScanning = false;
-//                    bluetoothAdapter.stopLeScan(mLeScanCallback);
-//                }
-//            }
-//        });
     }
 
     /**
@@ -334,39 +281,9 @@ public class MainActivity extends AppCompatActivity {
             super.onScanResult(callbackType, result);
             if (result!=null) {
                 if (result.getScanRecord().getBytes() != null) {
-                    String raDataStr = BlueToothUtil.bytesToHexString(result.getScanRecord().getBytes());
-                    Log.d(TAG, "\nonScanResult:  = " + raDataStr);
-                    Log.d(TAG, "\n名字: " + result.getDevice().getName());
-                    if (result.getDevice().getName() == null) {
-                        Log.d(TAG, " 为空");
-                    }
-                    if (result.getDevice().getName()!=null && result.getDevice().getName().equals(targetName) ) {
-                        receiveMessage.setText(String.valueOf(raDataStr));
-                        if (Build.VERSION.SDK_INT >= 21) {
-                            mScanning = false;
-                            mbLeScanner.stopScan(mScanCallback);
-                            Log.d(TAG, "调用暂停");
-                        } else {
-                            mScanning = false;
-                            bluetoothAdapter.stopLeScan(mLeScanCallback);
-                        }
-                        stopAdvertise();
-//                        mBluetoothLeAdvertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
-//                        Log.d(TAG, "onScanResult: " + (mBluetoothLeAdvertiser == null));
-//                        createAdvertiseData("0","0","0","0",);
-//                        mBluetoothLeAdvertiser.startAdvertising(createAdvSettings(false,0),mAdvertiseData,mScanResponseData,mAdvertiseCallback);
-                    }
+                    parseMsg(result.getScanRecord().getBytes());
                 }
             }
-        }
-        @Override
-        public void onBatchScanResults(List<ScanResult> results) {
-            super.onBatchScanResults(results);
-
-        }
-        @Override
-        public void onScanFailed(int errorCode) {
-            super.onScanFailed(errorCode);
         }
     };
 
@@ -422,41 +339,129 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    public void startBroadCast(View view) {
-        targetName = receive_mac.getText().toString();
-        String freq = reportingFrequency.getText().toString();
-        String power = powerThreshold.getText().toString();
-        String sign = signalThreshold.getText().toString();
-        String status = spinner.getSelectedItem().toString();
-        if (!targetName.equals("") && !freq.equals("") && !power.equals("") && !sign.equals("")) {
-            stopAdvertise();
-            Toast.makeText(this,"开始广播",Toast.LENGTH_SHORT).show();
-            String text = freq+power+sign;
-            createAdvertiseData(freq,power,sign,status,SET_INFO,targetName);
-            Log.d(TAG, "检测NUll" + mAdvertiseData+"结果");
-            Log.d(TAG, "检测NUll" + mScanResponseData+"结果");
-            Log.d(TAG, "检测null" + mBluetoothLeAdvertiser+"结果");
-            mBluetoothLeAdvertiser.startAdvertising(createAdvSettings(false,0),mAdvertiseData,mScanResponseData,mAdvertiseCallback);
-            //设置为正在广播
-            mAdvertising = true;
-        } else {
-            Log.d(TAG, "target =" + targetName +"feq =" + freq + "power =" + power + "sign =" + sign);
-            Toast.makeText(this,"请将配置信息填写完整",Toast.LENGTH_LONG).show();
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            //发送广播（配置设备）
+            case R.id.Btn_startSend:
+                goCfg(1);
+                break;
+            case R.id.Btn_getInfo:
+                jumpToRead();
+                break;
+            case R.id.exit:
+                goCfg(0XFF);
+            default:
+                break;
         }
     }
 
-    public void getInfo(View view) {
-
-        //获取对接mac
-        targetName = receive_mac.getText().toString();
-        if (!targetName.equals("")) {
-            stopAdvertise();
-            Toast.makeText(this,"正在查询配置",Toast.LENGTH_SHORT).show();
-            createAdvertiseData("","","","",GET_INFO,targetName);
-            mBluetoothLeAdvertiser.startAdvertising(createAdvSettings(false,0),mAdvertiseData,mScanResponseData,mAdvertiseCallback);
-            mAdvertising = true;
+    /**
+     * 开启配置
+     */
+    private void goCfg(int type) {
+        if (mAdvertising) {
+            BlueToothUtil.showDialog(this,"正在配置设备，如需操作，请关闭广播后重新操作");
         } else {
-            Toast.makeText(this,"请填写要查询的设备mac",Toast.LENGTH_LONG).show();
+            curOp = type;
+            SendMessage sendMessage;
+            //获取对接设备Mac
+            targetName = receive_mac.getText().toString();
+            //频率
+            String freq;
+            String power;
+            //信号阈值
+            String sign;
+            //开关机
+            String status;
+            //广播类型
+            String bType;
+            //不为空
+            boolean nNull = true;
+            switch (type) {
+                case 1:
+                    freq = reportingFrequency.getText().toString();
+                    power = powerThreshold.getText().toString();
+                    sign = signalThreshold.getText().toString();
+                    status = spinner.getSelectedItem().toString();
+                    bType = broadType.getSelectedItem().toString();
+                    if (targetName.equals("") || freq.equals("") || power.equals("") || sign.equals("")) {
+                        nNull = false;
+                    }
+                    sendMessage = new SendMessage(targetName,++curNum,type,new DataStructure(bType,status,freq,power,sign));
+                    break;
+                case 0XFF:
+                    sendMessage =  new SendMessage(targetName,++curNum,type,null);
+                    break;
+                default:
+                    sendMessage = null;
+                    break;
+            }
+            if (nNull && sendMessage != null) {
+                if (mAdvertising) {
+                    stopAdvertise();
+                }
+                createAdvertiseData(sendMessage);
+                mBluetoothLeAdvertiser.startAdvertising(createAdvSettings(false,0), mAdvertiseData, mAdvertiseCallback);
+                mAdvertising = true;
+            } else {
+                Log.d(TAG, "goCfg: nNull" + nNull);
+                Log.d(TAG, "goCfg: sendMessage" + sendMessage);
+                BlueToothUtil.showDialog(this,"请将配置信息填写完整");
+            }
+        }
+    }
+
+    /**
+     * 跳转页面
+     */
+    private void jumpToRead() {
+        if (mAdvertising) {
+            BlueToothUtil.showDialog(this,"正在配置，请稍后");
+        } else {
+            Intent intent = new Intent(this,ReadActivity.class);
+            intent.putExtra("connectMac",targetName);
+            startActivity(intent);
+        }
+    }
+
+    private void parseMsg(byte[] returnData) {
+        String returnDataStr = BlueToothUtil.bytesToHexString(returnData);
+        Log.d(TAG, "\nonScanResult:  = " + returnDataStr);
+        ReceiveMessage receiveMessage = new ReceiveMessage(returnDataStr);
+        if (receiveMessage.getExeResult() == 0) {
+            Log.d(TAG, "parseMsg: getExeResult" + receiveMessage.getExeResult());
+            exeMsg(receiveMessage);
+        }
+    }
+
+    private void exeMsg(ReceiveMessage receiveMessage) {
+        if (BlueToothUtil.messageCorrect(receiveMessage,curNum,targetName,curOp)) {
+            switch (curOp) {
+                case 0X01:
+                    BlueToothUtil.showDialog(this,"配置成功!");
+                    break;
+                case 0XFF:
+                    BlueToothUtil.showDialog(this,"设备已退出配置模式！");
+            }
+
+            backResult = true;
+            stopScan();
+        } else {
+            backResult = false;
+        }
+    }
+
+    private void stopScan() {
+        mScanning = false;
+        if (Build.VERSION.SDK_INT >= 21) {
+            Log.d(TAG, "stopScan: 大于21停止");
+            mbLeScanner.stopScan(mScanCallback);
+            Log.d(TAG, "stopScan: 执行结束");
+            stopAdvertise();
+        } else {
+            Log.d(TAG, "stopScan: 小于21停止");
+            bluetoothAdapter.stopLeScan(null);
         }
     }
 }
