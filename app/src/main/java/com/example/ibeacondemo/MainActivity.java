@@ -448,6 +448,7 @@ public class MainActivity  extends BaseDispatchTouchActivity implements View.OnC
             backResult = true;
             stopScan();
         } else {
+//            BlueToothUtil.showDialog(this,"未搜索到相对应的设备，请重试");
             backResult = false;
         }
     }

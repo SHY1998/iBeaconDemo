@@ -180,7 +180,7 @@ public class BlueToothUtil {
 
     public static boolean messageCorrect(ReceiveMessage receiveMessage, int curNum, String mac, int curType) {
 
-        Log.d("tools", "mac: " + receiveMessage.getMac() + "msgNum= " + receiveMessage.getCurNum() + "报文");
+        Log.d("tools", "mac: " + mac + "msgNum= " + curNum + "报文" + curType);
         return curNum == receiveMessage.getCurNum() && mac.equals(receiveMessage.getMac()) && curType == receiveMessage.getComType();
     }
 
@@ -246,5 +246,27 @@ public class BlueToothUtil {
     public static boolean messageTypeCorrect(String backMessage, int messageType) {
 
         return false;
+    }
+
+    public static String hexStringToString(String s) {
+        if (s == null || s.equals("")) {
+            return null;
+        }
+        s = s.replace(" ", "");
+        byte[] baKeyword = new byte[s.length() / 2];
+        for (int i = 0; i < baKeyword.length; i++) {
+            try {
+                baKeyword[i] = (byte) (0xff & Integer.parseInt(s.substring(i * 2, i * 2 + 2), 16));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            s = new String(baKeyword, "UTF-8");
+            new String();
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+        return s;
     }
 }

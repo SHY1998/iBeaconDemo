@@ -105,7 +105,9 @@ public class ReadActivity extends AppCompatActivity implements View.OnClickListe
         signalThreshold = findViewById(R.id.signalThreshold);
         Edition = findViewById(R.id.Edition);
         Battery = findViewById(R.id.Battery);
-
+        configFather = findViewById(R.id.configFather);
+        editionFather = findViewById(R.id.editionFather);
+        batterFather = findViewById(R.id.batterFather);
 
         receiveMac.setText(targetName);
         btn_getEdition.setOnClickListener(this);
@@ -328,7 +330,7 @@ public class ReadActivity extends AppCompatActivity implements View.OnClickListe
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void changeUi(ReceiveMessage receiveMessage) {
-        switch (Integer.parseInt(receiveMessage.getBroadType())) {
+        switch (receiveMessage.getComType()) {
             //参数报文
             case 2:
                 editionFather.setVisibility(View.GONE);
@@ -343,7 +345,7 @@ public class ReadActivity extends AppCompatActivity implements View.OnClickListe
             case 3:
                 editionFather.setVisibility(View.VISIBLE);
                 batterFather.setVisibility(View.GONE);
-                configFather.setVisibility(View.INVISIBLE);
+                configFather.setVisibility(View.GONE);
                 assert receiveMessage != null;
                 Edition.setText(receiveMessage.getEdition());
                 break;
@@ -365,6 +367,7 @@ public class ReadActivity extends AppCompatActivity implements View.OnClickListe
     private void exeMsg(ReceiveMessage receiveMessage) {
         //如果mac、数据编号、操作类型都符合
         if (BlueToothUtil.messageCorrect(receiveMessage,curNum,targetName,curOp)) {
+            Log.d(TAG, "exeMsg: 相同");
             changeUi(receiveMessage);
             //标定正确（使扫描结束后判断是否出现提示框）
             backResult = true;
@@ -372,6 +375,7 @@ public class ReadActivity extends AppCompatActivity implements View.OnClickListe
             stopScan();
 
         } else {
+            Log.d(TAG, "exeMsg: 不同");
             backResult = false;
         }
     }
@@ -380,7 +384,14 @@ public class ReadActivity extends AppCompatActivity implements View.OnClickListe
     private void parseMsg(byte[] returnData) {
         String returnDataStr = BlueToothUtil.bytesToHexString(returnData);
         Log.d(TAG, "\nonScanResult:  = " + returnDataStr);
+        //配置参数
+//        returnDataStr = "0D0930303031303230333034303509160002000001010101";
+        //版本号
+        //returnDataStr = "0D0930303031303230333034303509160003000401010101";
+        //电量
+        //returnDataStr = "0D0930303031303230333034303509160004001F";
         ReceiveMessage receiveMessage = new ReceiveMessage(returnDataStr);
+        Log.d(TAG, "模拟: " + receiveMessage.toString());
         if (receiveMessage.getExeResult() == 0) {
             exeMsg(receiveMessage);
         }

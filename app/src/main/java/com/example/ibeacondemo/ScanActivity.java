@@ -33,6 +33,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.ibeacondemo.Bean.ReceiveMessage;
 import com.example.ibeacondemo.Util.BlueToothUtil;
 import com.example.ibeacondemo.zxing.android.CaptureActivity;
 
@@ -46,6 +47,8 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
     private static final int REQUEST_CODE_SCAN = 0x0000;
     private String targetName;
     private boolean found = false;
+    private boolean communicating = false;
+    private boolean mBroading = false;
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner mBluetoothLeScanner;
@@ -89,7 +92,7 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    /**
+    /**inte
      * 点击扫描二维码
      */
     private void goScan(){
@@ -247,7 +250,10 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
                     String raDataStr = BlueToothUtil.bytesToHexString(result.getScanRecord().getBytes());
                     Log.d(TAG, "\nonScanResult:  = " + raDataStr);
                     Log.d(TAG, "\n名字: " + result.getDevice().getName());
-                    if (raDataStr.substring(4,16).equals(targetName)) {
+//                    raDataStr = "0D093030303130323033303430350416000300";
+                    ReceiveMessage receiveMessage = new ReceiveMessage(raDataStr);
+                    Log.d(TAG, "解析后" + receiveMessage.getMac());
+                    if (receiveMessage.getMac().equals(targetName)) {
                         found = true;
                     }
                 }
@@ -316,4 +322,5 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
                 .setPositiveButton("确定",null)
                 .show();
     }
+
 }

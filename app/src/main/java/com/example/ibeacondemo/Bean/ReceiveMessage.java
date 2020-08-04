@@ -2,6 +2,8 @@ package com.example.ibeacondemo.Bean;
 
 import android.util.Log;
 
+import com.example.ibeacondemo.Util.BlueToothUtil;
+
 public class ReceiveMessage {
     //设备mac
     private String mac;
@@ -66,7 +68,23 @@ public class ReceiveMessage {
     }
 
 
-
+    @Override
+    public String toString() {
+        return "ReceiveMessage{" +
+                "mac='" + mac + '\'' +
+                ", curNum=" + curNum +
+                ", comType=" + comType +
+                ", powerSet='" + powerSet + '\'' +
+                ", broadType='" + broadType + '\'' +
+                ", repFre='" + repFre + '\'' +
+                ", powerAlarm='" + powerAlarm + '\'' +
+                ", signAlarm='" + signAlarm + '\'' +
+                ", editLen='" + editLen + '\'' +
+                ", edition='" + edition + '\'' +
+                ", exeResult=" + exeResult +
+                ", battery='" + battery + '\'' +
+                '}';
+    }
 
     public ReceiveMessage(String mac, int curNum, int comType, String powerSet, String broadType, String repFre, String powerAlarm, String signAlarm) {
         this.mac = mac;
@@ -96,55 +114,61 @@ public class ReceiveMessage {
 //        this.battery = battery;
 //    }
     public ReceiveMessage(String msg) {
-        this.mac = msg.substring(4,16);
-        //Mac地址字段长度
         int fstLen = Integer.parseInt(msg.substring(0,2),16)+1;
+        Log.d("213", "解析中" + msg.substring(4,28) );
+        this.mac = BlueToothUtil.hexStringToString(msg.substring(4,fstLen*2));
+        //Mac地址字段长度
         String dataPart = msg.substring(fstLen*2+4);
+        Log.d("123", "dataPart" + dataPart);
         //数据编号
         this.curNum = Integer.parseInt(dataPart.substring(0,2),16);
         this.comType = Integer.parseInt(dataPart.substring(2,4),16);
         this.exeResult = Integer.parseInt(dataPart.substring(4,6),16);
         String lastData = dataPart.substring(6);
-        switch (this.comType) {
-            case 1:
-                break;
-            case 2:
-                switch (Integer.parseInt(lastData.substring(0,2),16)) {
-                    case 0:
-                        this.broadType = "MQTT";
-                        break;
-                    case 1:
-                        this.broadType = "JTT808";
-                        break;
-                    default:
-                        break;
-                }
-                switch (Integer.parseInt(lastData.substring(2,4),16)) {
-                    case 0:
-                        this.powerSet = "关机";
-                        break;
-                    case 1:
-                        this.powerSet = "开机";
-                        break;
-                    default:
-                        break;
-                }
-                this.repFre = lastData.substring(4,6);
-                this.powerAlarm = lastData.substring(6,8);
-                this.signAlarm = lastData.substring(8,10);
-                break;
-            case 3:
-                this.editLen = lastData.substring(0,2);
-                this.edition = lastData.substring(2);
-                break;
-            case 4:
-                this.battery = lastData;
-                break;
-            case 0XFF:
-                break;
-            default:
-                break;
+        Log.d("asd", "lastData " + lastData);
+        if (lastData != null && !lastData.equals("")){
+            switch (this.comType) {
+                case 1:
+                    break;
+                case 2:
+                    switch (Integer.parseInt(lastData.substring(0,2),16)) {
+                        case 0:
+                            this.broadType = "MQTT";
+                            break;
+                        case 1:
+                            this.broadType = "JTT808";
+                            break;
+                        default:
+                            break;
+                    }
+                    switch (Integer.parseInt(lastData.substring(2,4),16)) {
+                        case 0:
+                            this.powerSet = "关机";
+                            break;
+                        case 1:
+                            this.powerSet = "开机";
+                            break;
+                        default:
+                            break;
+                    }
+                    this.repFre = String.valueOf(Integer.parseInt(lastData.substring(4,6),16));
+                    this.powerAlarm = String.valueOf(Integer.parseInt(lastData.substring(6,8),16));
+                    this.signAlarm = String.valueOf(Integer.parseInt(lastData.substring(8,10),16));
+                    break;
+                case 3:
+                        this.editLen = lastData.substring(0,2);
+                        this.edition = lastData.substring(2);
+                    break;
+                case 4:
+                    this.battery = String.valueOf(Integer.parseInt(lastData,16));
+                    break;
+                case 0XFF:
+                    break;
+                default:
+                    break;
+            }
         }
+
     }
 
     public ReceiveMessage(String mac, int curNum, int comType) {
