@@ -17,7 +17,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ScanActivity">
+        <activity android:name=".FirstPageCode"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -27,10 +28,14 @@
         <activity android:name=".zxing.android.CaptureActivity"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar" />
-        <activity android:name=".MainActivity"
+        <activity android:name=".UselessActivity.MainActivity"
             android:theme="@style/AppTheme"/>
-        <activity android:name=".ReadActivity"
+        <activity android:name=".UselessActivity.ReadActivity"
             android:theme="@style/AppTheme"/>
+        <activity android:name=".SecondPageMain"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+        <activity android:name=".ThirdPageSend"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
     </application>
 
 </manifest>

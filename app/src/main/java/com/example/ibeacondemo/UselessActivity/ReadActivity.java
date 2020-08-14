@@ -1,4 +1,4 @@
-package com.example.ibeacondemo;
+package com.example.ibeacondemo.UselessActivity;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
@@ -31,6 +31,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.ibeacondemo.Bean.ReceiveMessage;
 import com.example.ibeacondemo.Bean.SendMessage;
+import com.example.ibeacondemo.R;
 import com.example.ibeacondemo.Util.BlueToothUtil;
 
 import java.util.List;
@@ -45,6 +46,7 @@ public class ReadActivity extends AppCompatActivity implements View.OnClickListe
     Button btn_getEdition;
     Button btn_getBattery;
     EditText status;
+    EditText tready;
     EditText freq;
     EditText powerThreshold;
     EditText signalThreshold;
@@ -100,6 +102,7 @@ public class ReadActivity extends AppCompatActivity implements View.OnClickListe
         btn_getConfig = findViewById(R.id.btn_getConfig);
         btn_getEdition = findViewById(R.id.btn_getEdition);
         status = findViewById(R.id.status);
+        tready = findViewById(R.id.treaty);
         freq = findViewById(R.id.freq);
         powerThreshold = findViewById(R.id.powerThreshold);
         signalThreshold = findViewById(R.id.signalThreshold);
@@ -297,6 +300,7 @@ public class ReadActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
+            Log.d(TAG, "多次出发");
             //如果报文不为空
             if (result!=null) {
                 if (result.getScanRecord().getBytes() != null) {
@@ -313,6 +317,19 @@ public class ReadActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void onScanFailed(int errorCode) {
             super.onScanFailed(errorCode);
+            if (errorCode == SCAN_FAILED_INTERNAL_ERROR) {
+                BlueToothUtil.showDialog(ReadActivity.this, "SCAN_FAILED_INTERNAL_ERROR");
+                Log.e(TAG, "数据大于31个字节");
+            } else if (errorCode == SCAN_FAILED_APPLICATION_REGISTRATION_FAILED) {
+                BlueToothUtil.showDialog(ReadActivity.this, "SCAN_FAILED_APPLICATION_REGISTRATION_FAILED");
+                Log.e(TAG, "数据大于31个字节");
+            } else if (errorCode == SCAN_FAILED_FEATURE_UNSUPPORTED) {
+                BlueToothUtil.showDialog(ReadActivity.this, "SCAN_FAILED_FEATURE_UNSUPPORTED");
+                Log.e(TAG, "正在连接的，无法再次连接");
+            } else if (errorCode == SCAN_FAILED_INTERNAL_ERROR) {
+                BlueToothUtil.showDialog(ReadActivity.this, "SCAN_FAILED_INTERNAL_ERROR");
+                Log.e(TAG, "由于内部错误操作失败");
+            }
         }
     };
 
@@ -337,6 +354,7 @@ public class ReadActivity extends AppCompatActivity implements View.OnClickListe
                 batterFather.setVisibility(View.GONE);
                 configFather.setVisibility(View.VISIBLE);
                 status.setText(Objects.requireNonNull(receiveMessage).getPowerSet());
+                tready.setText(receiveMessage.getBroadType());
                 freq.setText(receiveMessage.getRepFre());
                 powerThreshold.setText(receiveMessage.getPowerAlarm());
                 signalThreshold.setText(receiveMessage.getSignAlarm());
@@ -385,16 +403,26 @@ public class ReadActivity extends AppCompatActivity implements View.OnClickListe
         String returnDataStr = BlueToothUtil.bytesToHexString(returnData);
         Log.d(TAG, "\nonScanResult:  = " + returnDataStr);
         //配置参数
-//        returnDataStr = "0D0930303031303230333034303509160002000001010101";
+//        returnDataStr = "0D09303030313032303330343035 0A160002000101001F1F1F";
         //版本号
-        //returnDataStr = "0D0930303031303230333034303509160003000401010101";
+//        returnDataStr = "0D0930303031303230333034303509160003000431303130";
         //电量
-        //returnDataStr = "0D0930303031303230333034303509160004001F";
-        ReceiveMessage receiveMessage = new ReceiveMessage(returnDataStr);
-        Log.d(TAG, "模拟: " + receiveMessage.toString());
-        if (receiveMessage.getExeResult() == 0) {
-            exeMsg(receiveMessage);
+//        returnDataStr = "0D093030303130323033303430350616000400001F";
+        if (BlueToothUtil.initTest(returnDataStr,targetName)) {
+            try {
+                ReceiveMessage receiveMessage = new ReceiveMessage(returnDataStr);
+                Log.d(TAG, "模拟: " + receiveMessage.toString());
+                if (receiveMessage.getExeResult() == 0) {
+                    exeMsg(receiveMessage);
+                }
+            } catch (Exception e) {
+                Log.d(TAG, "Exception: " + e);
+                Toast.makeText(ReadActivity.this,e.toString(),Toast.LENGTH_SHORT).show();
+            }
+
         }
+
+
     }
 
     /**
@@ -411,7 +439,7 @@ public class ReadActivity extends AppCompatActivity implements View.OnClickListe
                 stopAdvertise();
             } else {
                 Log.d(TAG, "stopScan: 小于21停止");
-                bluetoothAdapter.stopLeScan(null);
+                bluetoothAdapter.stopLeScan(mLeScanCallback);
             }
     }
 

@@ -1,4 +1,4 @@
-package com.example.ibeacondemo;
+package com.example.ibeacondemo.UselessActivity;
 
 import androidx.annotation.RequiresApi;
 
@@ -34,10 +34,9 @@ import android.widget.Toast;
 import com.example.ibeacondemo.Bean.DataStructure;
 import com.example.ibeacondemo.Bean.ReceiveMessage;
 import com.example.ibeacondemo.Bean.SendMessage;
+import com.example.ibeacondemo.R;
 import com.example.ibeacondemo.Util.BaseDispatchTouchActivity;
 import com.example.ibeacondemo.Util.BlueToothUtil;
-
-import java.util.List;
 
 @SuppressLint("NewApi")
 public class MainActivity  extends BaseDispatchTouchActivity implements View.OnClickListener{
@@ -54,6 +53,7 @@ public class MainActivity  extends BaseDispatchTouchActivity implements View.OnC
     private boolean mAdvertising = false;
     //是否成功
     private boolean backResult = false;
+    private boolean isEnd = false;
     //蓝牙广播器
     private BluetoothLeAdvertiser mBluetoothLeAdvertiser;
     //蓝牙扫描器
@@ -127,14 +127,16 @@ public class MainActivity  extends BaseDispatchTouchActivity implements View.OnC
             return;
         }
         if (!mScanning) {
+            mScanning = true;
             if (Build.VERSION.SDK_INT >=21) {
-                mScanning = true;
+
                 if (mbLeScanner == null) {
                     mbLeScanner = bluetoothAdapter.getBluetoothLeScanner();
                 }
+                Log.d(TAG, "bleScan: 多次之前出发1");
                 mbLeScanner.startScan(null,createScanSettings(),mScanCallback);
             } else {
-                  mScanning = true;
+
                   bluetoothAdapter.startLeScan(mLeScanCallback);
             }
             Log.d(TAG, "bleScan: " + mHandler);
@@ -192,7 +194,6 @@ public class MainActivity  extends BaseDispatchTouchActivity implements View.OnC
         //如果广播包为空,则提示错误
         if (mAdvertiseData == null) {
             Log.e(TAG, "mAdvertiseSettings == null");
-
         }
     }
 
@@ -275,11 +276,14 @@ public class MainActivity  extends BaseDispatchTouchActivity implements View.OnC
     /**
      * 扫描回调
      */
+    @SuppressLint("NewApi")
     private ScanCallback mScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
+            Log.d(TAG, "多次出发");
             if (result!=null) {
+                Log.d(TAG, "欻的raData" + result);
                 if (result.getScanRecord().getBytes() != null) {
                     parseMsg(result.getScanRecord().getBytes());
                 }
@@ -310,6 +314,7 @@ public class MainActivity  extends BaseDispatchTouchActivity implements View.OnC
         //成功
         public void onStartSuccess(AdvertiseSettings settingsInEffect) {
             super.onStartSuccess(settingsInEffect);
+
             if (settingsInEffect != null) {
                 bleScan();
                 Log.d(TAG, "onStartSuccess TxPowerLv=" + settingsInEffect.getTxPowerLevel() + " mode=" + settingsInEffect.getMode()
@@ -344,6 +349,7 @@ public class MainActivity  extends BaseDispatchTouchActivity implements View.OnC
         switch (view.getId()) {
             //发送广播（配置设备）
             case R.id.Btn_startSend:
+//                isEnd = false;
                 goCfg(1);
                 break;
             case R.id.Btn_getInfo:
@@ -419,7 +425,7 @@ public class MainActivity  extends BaseDispatchTouchActivity implements View.OnC
         if (mAdvertising) {
             BlueToothUtil.showDialog(this,"正在配置，请稍后");
         } else {
-            Intent intent = new Intent(this,ReadActivity.class);
+            Intent intent = new Intent(this, ReadActivity.class);
             intent.putExtra("connectMac",targetName);
             startActivity(intent);
         }
@@ -428,41 +434,54 @@ public class MainActivity  extends BaseDispatchTouchActivity implements View.OnC
     private void parseMsg(byte[] returnData) {
         String returnDataStr = BlueToothUtil.bytesToHexString(returnData);
         Log.d(TAG, "\nonScanResult:  = " + returnDataStr);
-        ReceiveMessage receiveMessage = new ReceiveMessage(returnDataStr);
-        if (receiveMessage.getExeResult() == 0) {
-            Log.d(TAG, "parseMsg: getExeResult" + receiveMessage.getExeResult());
-            exeMsg(receiveMessage);
+        returnDataStr = "0D 09 303030313032303330343035 04 16 00 01 00";
+        if (BlueToothUtil.initTest(returnDataStr, targetName)) {
+            try{
+                ReceiveMessage receiveMessage = new ReceiveMessage(returnDataStr);
+                if (receiveMessage.getExeResult() == 0 ) {
+                    Log.d(TAG, "parseMsg: getExeResult" + receiveMessage.getExeResult());
+                    exeMsg(receiveMessage);
+                }
+            } catch (Exception e) {
+                Toast.makeText(MainActivity.this,e.toString(),Toast.LENGTH_SHORT).show();
+
+            }
         }
+
     }
 
     private void exeMsg(ReceiveMessage receiveMessage) {
         if (BlueToothUtil.messageCorrect(receiveMessage,curNum,targetName,curOp)) {
             switch (curOp) {
                 case 0X01:
+                    Log.d(TAG, "exeMsg: 配置成功");
+                    stopScan();
                     BlueToothUtil.showDialog(this,"配置成功!");
                     break;
                 case 0XFF:
-                    BlueToothUtil.showDialog(this,"设备已退出配置模式！");
+                    stopScan();
+                    BlueToothUtil.showDialog(this," 设备已退出配置模式！");
+                    break;
             }
-
             backResult = true;
-            stopScan();
         } else {
 //            BlueToothUtil.showDialog(this,"未搜索到相对应的设备，请重试");
             backResult = false;
         }
     }
-
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void stopScan() {
         mScanning = false;
         if (Build.VERSION.SDK_INT >= 21) {
             Log.d(TAG, "stopScan: 大于21停止");
-            mbLeScanner.stopScan(mScanCallback);
-            Log.d(TAG, "stopScan: 执行结束");
             stopAdvertise();
+            mbLeScanner.stopScan(mScanCallback);
+//            isEnd = true;
+            Log.d(TAG, "stopScan: 执行结束");
+
         } else {
             Log.d(TAG, "stopScan: 小于21停止");
-            bluetoothAdapter.stopLeScan(null);
+            bluetoothAdapter.stopLeScan(mLeScanCallback);
         }
     }
 }

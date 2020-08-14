@@ -1,6 +1,8 @@
 package com.example.ibeacondemo.Bean;
 
-public class SendMessage {
+import java.io.Serializable;
+
+public class SendMessage implements Serializable {
     //设备名
     private String mac;
     //数据编号

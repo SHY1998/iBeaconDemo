@@ -1,9 +1,11 @@
 package com.example.ibeacondemo.Bean;
 
+import java.io.Serializable;
+
 /**
  * 发送报文数据段
  */
-public class DataStructure {
+public class DataStructure implements Serializable {
     //协议类型
     private String broadType;
     //GSM开关

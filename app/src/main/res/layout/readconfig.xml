@@ -59,6 +59,19 @@
             tools:ignore="LabelFor,MissingConstraints"
             android:layout_width="match_parent"
             />
+        <TextView
+            android:text="协议为："
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"/>
+
+        <EditText
+            android:enabled="false"
+            android:id="@+id/treaty"
+            android:layout_height="50dp"
+            tools:ignore="LabelFor,MissingConstraints"
+            android:layout_width="match_parent"
+            />
 
 
         <TextView

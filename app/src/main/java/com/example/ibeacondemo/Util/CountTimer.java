@@ -4,8 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.CountDownTimer;
 
-import com.example.ibeacondemo.MainActivity;
-import com.example.ibeacondemo.ScanActivity;
+import com.example.ibeacondemo.UselessActivity.ScanActivity;
 
 public class CountTimer extends CountDownTimer {
     private Context context;

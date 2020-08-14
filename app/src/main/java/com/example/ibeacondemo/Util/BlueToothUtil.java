@@ -3,6 +3,7 @@ package com.example.ibeacondemo.Util;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.util.Log;
+import android.util.StateSet;
 
 import com.example.ibeacondemo.Bean.ReceiveMessage;
 import com.example.ibeacondemo.Bean.SendMessage;
@@ -48,9 +49,9 @@ public class BlueToothUtil {
                 //上报频率字段
                 str += hexPad(Integer.toHexString(Integer.parseInt(freq)),2);
                 //电量阈值字段
-                str += hexPad(Integer.toHexString(Integer.parseInt(power)),2);
+                str += hexPad(Integer.toHexString(Integer.parseInt(power)),1);
                 //移动信号字段
-                str += hexPad(Integer.toHexString(Integer.parseInt(sign)),2);
+                str += hexPad(Integer.toHexString(Integer.parseInt(sign)),1);
                 break;
             case 0X02: case 0X03: case 0X04: case 0XFF:
                 break;
@@ -189,49 +190,6 @@ public class BlueToothUtil {
         return Integer.parseInt(msg.substring(fstLen*2+4,fstLen*2+6),16);
     }
 
-//    public static SendMessage parseMsg(String msg) {
-//        String mac = msg.substring(4,16);
-//        //Mac地址字段长度
-//        int fstLen = Integer.parseInt(msg.substring(0,2),16)+1;
-//        //后面数据协议字段
-//        String data = msg.substring(fstLen*2+6);
-//        String curNum = data.substring(0,2);
-//        String curType = data.substring(2,4);
-//        //是否成功
-//        String result = data.substring(8,10);
-//        //判断是否成功
-//        if (Integer.parseInt(result,16) == 1) {
-//            return null;
-//        }
-//        int messageType = Integer.parseInt(data.substring(6,8),16);
-//        SendMessage sendMessage;
-//
-//        switch (messageType) {
-//            case 2:
-//                String broadType = data.substring(0,2);
-//                String status = data.substring(2,4);
-//                String freq = data.substring(4,6);
-//                String power = data.substring(6,8);
-//                String signal = data.substring(8,10);
-//                sendMessage = new SendMessage(status,broadType,freq,power,signal);
-//                break;
-//            case 3:
-//                String editLen = data.substring(0,2);
-//                String edit = data.substring(2);
-//                sendMessage = new SendMessage(editLen,edit);
-//                break;
-//            case 4:
-//                sendMessage = new SendMessage(data);
-//                break;
-//            default:
-//                sendMessage = null;
-//                break;
-//        }
-//        if (sendMessage!=null) {
-//            sendMessage.setBroadType(String.valueOf(messageType));
-//        }
-//        return sendMessage;
-//    }
     /**
      * 提示框
      */
@@ -242,12 +200,6 @@ public class BlueToothUtil {
                 .setPositiveButton("确定",null)
                 .show();
     }
-
-    public static boolean messageTypeCorrect(String backMessage, int messageType) {
-
-        return false;
-    }
-
     public static String hexStringToString(String s) {
         if (s == null || s.equals("")) {
             return null;
@@ -269,4 +221,18 @@ public class BlueToothUtil {
         }
         return s;
     }
+
+    public static boolean initTest(String msg, String targetMac) {
+        msg = msg.replace(" ","");
+        int fstLen = Integer.parseInt(msg.substring(0,2),16)+1;
+        //第一部分数据
+        String fstData =  msg.substring(0,fstLen*2);
+        //第二部分长度
+        String  mac = BlueToothUtil.hexStringToString(fstData.substring(4,fstLen*2));
+        System.out.println("输出");
+        System.out.println(mac);
+        System.out.println(targetMac);
+        return mac.equals(targetMac);
+    }
+
 }

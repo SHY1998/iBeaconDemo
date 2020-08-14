@@ -1,8 +1,7 @@
-package com.example.ibeacondemo;
+package com.example.ibeacondemo.UselessActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -34,6 +33,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.ibeacondemo.Bean.ReceiveMessage;
+import com.example.ibeacondemo.R;
 import com.example.ibeacondemo.Util.BlueToothUtil;
 import com.example.ibeacondemo.zxing.android.CaptureActivity;
 
@@ -250,11 +250,17 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
                     String raDataStr = BlueToothUtil.bytesToHexString(result.getScanRecord().getBytes());
                     Log.d(TAG, "\nonScanResult:  = " + raDataStr);
                     Log.d(TAG, "\n名字: " + result.getDevice().getName());
-//                    raDataStr = "0D093030303130323033303430350416000300";
-                    ReceiveMessage receiveMessage = new ReceiveMessage(raDataStr);
-                    Log.d(TAG, "解析后" + receiveMessage.getMac());
-                    if (receiveMessage.getMac().equals(targetName)) {
-                        found = true;
+                    raDataStr = "0D093030303130323033303430350416000300";
+                    if (BlueToothUtil.initTest(raDataStr, targetName)) {
+                        try {
+                            ReceiveMessage receiveMessage = new ReceiveMessage(raDataStr);
+                            if (receiveMessage.getMac().equals(targetName)) {
+                                found = true;
+                            }
+                        } catch (Exception e) {
+                            Toast.makeText(ScanActivity.this,e.toString(),Toast.LENGTH_SHORT).show();
+                        }
+
                     }
                 }
             }
@@ -322,5 +328,4 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
                 .setPositiveButton("确定",null)
                 .show();
     }
-
 }

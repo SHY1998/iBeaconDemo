@@ -6,10 +6,16 @@
     android:id="@+id/LinearLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".UselessActivity.MainActivity"
+    tools:context=".ThirdPageSend"
     android:background="@color/colorBackground"
     android:orientation="vertical">
 
+    <TextView
+        android:textSize="30sp"
+        android:id="@+id/TV_infoDisplay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
 
     <TextView
         android:text="@string/mainPageMacHint"
@@ -44,73 +50,51 @@
         android:layout_width="match_parent"
         android:spinnerMode="dialog"
         android:layout_height="60dp"/>
+    <TextView
+        android:text="上报频率"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"/>
     <EditText
         android:id="@+id/reportingFre"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:hint="@string/reportingFrequency"
         tools:ignore="MissingConstraints"
         android:inputType="number" />
+    <TextView
+        android:text="电量阈值"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"/>
     <EditText
         android:id="@+id/powerThreshold"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:hint="@string/powerThreshold"
         android:inputType="number"
         tools:ignore="MissingConstraints" />
+    <TextView
+        android:text="移动信号阈值"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"/>
     <EditText
         android:id="@+id/signalThreshold"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:inputType="number"
-        android:hint="@string/signalThreshold"
         tools:ignore="MissingConstraints"
-         />
-<!--    <TextView-->
-<!--        android:id="@+id/receiveMessage"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="74dp"-->
-<!--        android:hint="@string/receiveMessage"-->
-<!--        tools:ignore="MissingConstraints"-->
-<!--        tools:layout_editor_absoluteX="0dp"-->
-<!--        tools:layout_editor_absoluteY="378dp" />-->
-
+        />
     <Button
         android:id="@+id/Btn_startSend"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/startBroadCast"
-        tools:ignore="MissingConstraints,OnClick"
-         />
-
-    <Button
-        android:id="@+id/Btn_getInfo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-
-        android:text="@string/getInfo"
+        android:text="配置设备"
         tools:ignore="MissingConstraints,OnClick"
         />
+
     <Button
         android:id="@+id/exit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="退出配置"/>
-<!--    <Button-->
-<!--        android:id="@+id/Btn_stopSend"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="@string/stopSend"-->
-<!--        tools:ignore="MissingConstraints"-->
-<!--        tools:layout_editor_absoluteX="16dp"-->
-<!--        tools:layout_editor_absoluteY="94dp" />-->
-
-<!--    <Button-->
-<!--        android:id="@+id/Btn_startReceive"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="@string/startReceiver"-->
-<!--        tools:ignore="MissingConstraints"-->
-<!--        tools:layout_editor_absoluteX="0dp"-->
-<!--        tools:layout_editor_absoluteY="588dp" />-->
 </LinearLayout>
