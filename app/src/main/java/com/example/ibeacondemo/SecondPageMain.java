@@ -75,19 +75,25 @@ public class SecondPageMain extends BaseDispatchTouchActivity implements View.On
     private int curNum = -1;
     private int mTotalProgress;
     private int mCurrentProgress;
+    private int mCurrentSpeed = 300;
     private TasksCompletedView mTasksView;
     //页面组件
 
-
+    Runnable runnable;
     @Override
     @SuppressLint("NewApi")
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.secondpage);
-        initBasicCfg();
-        initBroad();
-        getCfg(find);
+        try {
+            initBasicCfg();
+            initBroad();
+            getCfg(find);
+        } catch (Exception e) {
+            Toast.makeText(SecondPageMain.this,e.toString(),Toast.LENGTH_LONG).show();
+        }
+
     }
 
     /**
@@ -281,11 +287,14 @@ public class SecondPageMain extends BaseDispatchTouchActivity implements View.On
             case find:
                 Log.d(TAG, "getCfg: 进入find");
                 curOp = Op;
+                //缓存条1S加1
+                mCurrentSpeed = 1000;
                 bleScan();
                 break;
             case cfgGet:
                 Log.d(TAG, "getCfg: cfgGet");
                 previousOp = curOp;
+                mCurrentSpeed = 300;
                 Log.d(TAG, " previousOp = " + previousOp + "successOp=" + successOp );
                 if (previousOp == successOp) {
                     Log.d(TAG, "getCfg: 成功进入对比");
@@ -293,7 +302,9 @@ public class SecondPageMain extends BaseDispatchTouchActivity implements View.On
                     mHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            simulationMsg = "0D093030303130323033303430350A160002000101001F1F1F";
+//                            simulationMsg = "0D093030303130323033303430350A160002000101001F1F1F";
+                            simulationMsg = "0D 09 30 30 30 31 30 32 30 33 30 34 30 35 0A 16 00 02 00       00 00 00 1F 1F 1F";
+
 //                            simulationMsg = "0D093130303130323033303430350A160002000101001F1F1F";
                         }
                     },2000);
@@ -387,7 +398,7 @@ public class SecondPageMain extends BaseDispatchTouchActivity implements View.On
                 mCurrentProgress += 1;
                 mTasksView.setProgress(mCurrentProgress);
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(mCurrentSpeed);
                 } catch (Exception e) {
                     e.printStackTrace();
                     Log.d(TAG, "run: 错误" + e.toString());
@@ -409,7 +420,8 @@ public class SecondPageMain extends BaseDispatchTouchActivity implements View.On
             tips = "搜索失败，请将设备靠近手机并确认红灯快速闪烁2次";
         }
         final String finalTips = tips;
-        mHandler.postDelayed(new Runnable() {
+
+        mHandler.postDelayed(runnable = new Runnable() {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void run() {
@@ -470,11 +482,13 @@ public class SecondPageMain extends BaseDispatchTouchActivity implements View.On
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
             if (result != null) {
-                if (result.getScanRecord().getBytes() != null) {
+                if (result.getScanRecord().getBytes() != null && result.getScanRecord().getBytes().length > 38) {
+                    Log.d(TAG, "onScanResult: 长度" + result.getScanRecord().getBytes().length);
+                    Log.d(TAG, "onScanResult: 文本" + result.getScanRecord().getBytes());
                     String reDataStr = BlueToothUtil.bytesToHexString(result.getScanRecord().getBytes());
                     Log.d(TAG, "\nonScanResult:  = " + reDataStr);
 //                    reDataStr = "0D093030303130323033303430350416000300";
-//                    simulationMsg
+//                    simulationMsg / reDataStr
                     if(BlueToothUtil.initTest(reDataStr, targetName)) {
 //                        found = true;
                         parseMsg(reDataStr);
@@ -504,7 +518,7 @@ public class SecondPageMain extends BaseDispatchTouchActivity implements View.On
         //初始化广播设置
         AdvertiseSettings.Builder mSettingsbuilder = new AdvertiseSettings.Builder();
         //设置广播模式，以控制广播的功率和延迟。 ADVERTISE_MODE_LOW_LATENCY为高功率，低延迟
-        mSettingsbuilder.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED);
+        mSettingsbuilder.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY);
         //设置广告类型是可连接还是不可连接。
         mSettingsbuilder.setConnectable(connectable);
         //广播时限。最多180000毫秒。值为0将禁用时间限制。（不设置则为无限广播时长）
@@ -587,4 +601,13 @@ public class SecondPageMain extends BaseDispatchTouchActivity implements View.On
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopScan();
+        stopAdvertise();
+        mHandler.removeCallbacks(runnable);
+        mTotalProgress = mCurrentProgress;
+    }
 }

@@ -28,7 +28,7 @@ public class BaseDispatchTouchActivity extends AppCompatActivity{
     }
     private void init() {
         //初始化CountTimer，设置倒计时为2分钟。
-        countTimerView=new CountTimer(60000,1000,BaseDispatchTouchActivity.this);
+        countTimerView=new CountTimer(30000000,1000,BaseDispatchTouchActivity.this);
     }
 
     /**

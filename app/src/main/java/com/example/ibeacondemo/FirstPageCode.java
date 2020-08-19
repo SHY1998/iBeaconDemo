@@ -77,9 +77,14 @@ public class FirstPageCode extends AppCompatActivity implements View.OnClickList
                 if (targetName.equals("")) {
                     BlueToothUtil.showDialog(FirstPageCode.this,"请先输入设备Mac地址");
                 } else {
-                    Intent intent = new Intent(FirstPageCode.this, SecondPageMain.class);
-                    intent.putExtra("mac", targetName);
-                    startActivity(intent);
+                    try {
+                        Intent intent = new Intent(FirstPageCode.this, SecondPageMain.class);
+                        intent.putExtra("mac", targetName);
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        Toast.makeText(FirstPageCode.this, "问题" + e.toString(), Toast.LENGTH_LONG).show();
+                    }
+
                 }
                 break;
             default:

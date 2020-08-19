@@ -100,6 +100,7 @@ public class ThirdPageSend extends BaseDispatchTouchActivity implements View.OnC
         Intent intent = getIntent();
         targetName = intent.getStringExtra("mac");
         ReceiveMessage msg = (ReceiveMessage) intent.getSerializableExtra("info");
+        Log.d(TAG, "最后的成绩" + msg.toString());
         assert msg != null;
         if (msg.getBroadType().equals("MQTT")) {
             broadType.setSelection(0);
@@ -109,7 +110,7 @@ public class ThirdPageSend extends BaseDispatchTouchActivity implements View.OnC
         if (msg.getPowerSet().equals("开机")) {
             powerChange.setSelection(0);
         } else {
-            broadType.setSelection(1);
+            powerChange.setSelection(1);
         }
 
 
@@ -271,7 +272,7 @@ public class ThirdPageSend extends BaseDispatchTouchActivity implements View.OnC
                         BlueToothUtil.showDialog(ThirdPageSend.this,"配置失败，请重试");
                     }
                 }
-            }, 10000);
+            }, 15000);
         } else {
             BlueToothUtil.showDialog(ThirdPageSend.this,"手机正在配置,请勿操作");
         }
@@ -343,7 +344,7 @@ public class ThirdPageSend extends BaseDispatchTouchActivity implements View.OnC
             super.onScanResult(callbackType, result);
             if (result!=null) {
                 Log.d(TAG, "欻的raData" + result);
-                if (result.getScanRecord().getBytes() != null) {
+                if (result.getScanRecord().getBytes() != null && result.getScanRecord().getBytes().length > 38) {
                     parseMsg(result.getScanRecord().getBytes());
                 }
             }
@@ -378,14 +379,8 @@ public class ThirdPageSend extends BaseDispatchTouchActivity implements View.OnC
             switch (curOp) {
                 case 0X01:
                     stopScan();
-                    mHandler.postDelayed(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            banBTN(true);
-                            BlueToothUtil.showDialog(ThirdPageSend.this,"配置成功!");
-                        }
-                    },10000);
+                    banBTN(true);
+                    BlueToothUtil.showDialog(ThirdPageSend.this,"配置成功!");
                     Log.d(TAG, "exeMsg: 配置成功");
                     break;
                 case 0XFF:

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.CountDownTimer;
 
+import com.example.ibeacondemo.FirstPageCode;
 import com.example.ibeacondemo.UselessActivity.ScanActivity;
 
 public class CountTimer extends CountDownTimer {
@@ -22,6 +23,6 @@ public class CountTimer extends CountDownTimer {
 
     @Override
     public void onFinish() {
-        context.startActivity(new Intent(context, ScanActivity.class));
+        context.startActivity(new Intent(context, FirstPageCode.class));
     }
 }
